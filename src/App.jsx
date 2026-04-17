@@ -1,48 +1,17 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import MovieDetail from "./pages/MovieDetail";
+
 function App() {
   return (
-    <>
-      <nav>
-        <a href="/">
-          <h2>🎬 Movie Explorer</h2>
-        </a>
-        <a href="/">Home</a>
-      </nav>
-      <div>
-        <form>
-          <input placeholder="Search for a movie..." />
-          <button type="submit">Search 🔎</button>
-        </form>
-        <div>
-          <div>
-            <img
-              alt="The Avengers"
-              src="https://m.media-amazon.com/images/M/MV5BNGE0YTVjNzUtNzJjOS00NGNlLTgxMzctZTY4YTE1Y2Y1ZTU4XkEyXkFqcGc@._V1_SX300.jpg"
-            />
-            <h3>The Avengers</h3>
-            <p>2012</p>
-            <a href="movie-detail.html">Details</a>
-          </div>
-          <div>
-            <img
-              alt="The Avengers"
-              src="https://m.media-amazon.com/images/M/MV5BNGE0YTVjNzUtNzJjOS00NGNlLTgxMzctZTY4YTE1Y2Y1ZTU4XkEyXkFqcGc@._V1_SX300.jpg"
-            />
-            <h3>The Avengers</h3>
-            <p>2012</p>
-            <a href="movie-detail.html">Details</a>
-          </div>
-          <div>
-            <img
-              alt="The Avengers"
-              src="https://m.media-amazon.com/images/M/MV5BNGE0YTVjNzUtNzJjOS00NGNlLTgxMzctZTY4YTE1Y2Y1ZTU4XkEyXkFqcGc@._V1_SX300.jpg"
-            />
-            <h3>The Avengers</h3>
-            <p>2012</p>
-            <a href="movie-detail.html">Details</a>
-          </div>
-        </div>
-      </div>
-    </>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/movie/:imdbID" element={<MovieDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
