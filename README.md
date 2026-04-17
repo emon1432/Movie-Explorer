@@ -1,16 +1,94 @@
-# React + Vite
+# Movie Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern movie discovery app built with React + Vite and powered by the OMDb API.
 
-Currently, two official plugins are available:
+## What Is Included
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Beautiful, responsive redesign with custom typography and cinematic visual style.
+- Smart search with OMDb-supported filters:
+	- title (`s`)
+	- type (`movie`, `series`, `episode`)
+	- year (`y`)
+	- pagination (`page`, up to 100)
+- Detailed movie pages using OMDb ID lookup (`i`) with full plot (`plot=full`).
+- Persistent watchlist using local storage.
+- Structured feature-based folder architecture for easier scaling.
 
-## React Compiler
+## OMDb API Notes
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app uses these OMDb endpoints and parameters:
 
-## Expanding the ESLint configuration
+- Search: `https://www.omdbapi.com/?apikey=KEY&s=title&type=movie|series|episode&y=year&page=1`
+- Detail: `https://www.omdbapi.com/?apikey=KEY&i=tt1234567&plot=full`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+3. Add your OMDb API key in `.env`:
+
+```env
+VITE_OMDB_API_KEY=your_omdb_api_key_here
+```
+
+4. Start development server:
+
+```bash
+npm run dev
+```
+
+## Project Structure
+
+```text
+src/
+	app/
+		App.jsx
+	components/
+		layout/
+			Navbar.jsx
+		ui/
+			EmptyState.jsx
+			LoadingState.jsx
+	context/
+		WatchlistContext.jsx
+	features/
+		movies/
+			components/
+				MovieCard.jsx
+				MovieGrid.jsx
+				Pagination.jsx
+				SearchPanel.jsx
+			hooks/
+				useMovieSearch.js
+	hooks/
+		useLocalStorage.js
+	pages/
+		Home.jsx
+		MovieDetail.jsx
+		Watchlist.jsx
+	services/
+		omdb.js
+	styles/
+		globals.css
+	utils/
+		formatters.js
+	App.jsx
+	main.jsx
+```
+
+## Scripts
+
+- `npm run dev`: Start Vite development server.
+- `npm run build`: Build production bundle.
+- `npm run preview`: Preview production build.
+- `npm run lint`: Run ESLint.

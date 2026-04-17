@@ -1,83 +1,133 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import EmptyState from "../components/ui/EmptyState.jsx";
+import LoadingState from "../components/ui/LoadingState.jsx";
+import { useWatchlist } from "../context/WatchlistContext.jsx";
+import { getMovieDetails } from "../services/omdb.js";
+import { formatPosterUrl } from "../utils/formatters.js";
 
 function MovieDetail() {
   const { imdbID } = useParams();
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
+
   const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function getMovie() {
-      const response = await fetch(
-        `http://www.omdbapi.com/?apikey=191c252e&i=${imdbID}`,
-      );
-      const data = await response.json();
-      setMovie(data || null);
+    let isMounted = true;
+
+    async function loadMovie() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await getMovieDetails(imdbID, "full");
+        if (isMounted) {
+          setMovie(data);
+        }
+      } catch (detailsError) {
+        if (isMounted) {
+          setError(detailsError.message);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
-    getMovie();
+
+    loadMovie();
+
+    return () => {
+      isMounted = false;
+    };
   }, [imdbID]);
 
-  if (!movie) {
-    return <p>Loading...!!!</p>;
+  if (loading) {
+    return <LoadingState message="Loading cinematic details..." />;
   }
 
-  //   console.log(movie);
-  //   {
-  //     "Title": "The Avengers",
-  //     "Year": "2012",
-  //     "Rated": "PG-13",
-  //     "Released": "04 May 2012",
-  //     "Runtime": "143 min",
-  //     "Genre": "Action, Sci-Fi",
-  //     "Director": "Joss Whedon",
-  //     "Writer": "Joss Whedon, Zak Penn",
-  //     "Actors": "Robert Downey Jr., Chris Evans, Scarlett Johansson",
-  //     "Plot": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving humanity.",
-  //     "Language": "English, Russian",
-  //     "Country": "United States",
-  //     "Awards": "Nominated for 1 Oscar. 40 wins & 81 nominations total",
-  //     "Poster": "https://m.media-amazon.com/images/M/MV5BNGE0YTVjNzUtNzJjOS00NGNlLTgxMzctZTY4YTE1Y2Y1ZTU4XkEyXkFqcGc@._V1_SX300.jpg",
-  //     "Ratings": [
-  //         {
-  //             "Source": "Internet Movie Database",
-  //             "Value": "8.0/10"
-  //         },
-  //         {
-  //             "Source": "Rotten Tomatoes",
-  //             "Value": "91%"
-  //         },
-  //         {
-  //             "Source": "Metacritic",
-  //             "Value": "69/100"
-  //         }
-  //     ],
-  //     "Metascore": "69",
-  //     "imdbRating": "8.0",
-  //     "imdbVotes": "1,547,278",
-  //     "imdbID": "tt0848228",
-  //     "Type": "movie",
-  //     "DVD": "N/A",
-  //     "BoxOffice": "$623,357,910",
-  //     "Production": "N/A",
-  //     "Website": "N/A",
-  //     "Response": "True"
-  // }
+  if (error || !movie) {
+    return (
+      <EmptyState
+        title="Movie Not Available"
+        description={error || "Could not load this title right now."}
+      />
+    );
+  }
 
   return (
-    <div>
-      <h2>{movie.Title}</h2>
-      <img alt={movie.Title} src={movie.Poster} />
-      <p>
-        <strong>Genre:</strong> {movie.Genre}
-      </p>
-      <p>
-        <strong>Released:</strong>
-        {movie.Released}
-      </p>
-      <p>
-        <strong>Plot:</strong> {movie.Plot}
-      </p>
-      {/* and more */}
-    </div>
+    <article className="detail-layout">
+      <Link className="btn btn-outline-secondary btn-ghost align-self-start" to="/">
+        Back to Discover
+      </Link>
+
+      <div className="detail-grid">
+        <div className="detail-poster-wrap">
+          <img
+            src={formatPosterUrl(movie.Poster)}
+            alt={`Poster of ${movie.Title}`}
+            onError={(e) => {
+            e.currentTarget.src =
+              "https://placehold.co/600x900/1b1733/e9dcff?text=No+Poster";
+          }}
+          />
+        </div>
+
+        <section className="detail-content">
+          <p className="eyebrow">{movie.Type?.toUpperCase()}</p>
+          <h1>{movie.Title}</h1>
+          <p className="detail-subtitle">
+            {movie.Year} • {movie.Runtime} • {movie.Rated}
+          </p>
+
+          <p>{movie.Plot}</p>
+
+          <div className="detail-facts">
+            <p>
+              <strong>Genre:</strong> {movie.Genre}
+            </p>
+            <p>
+              <strong>Director:</strong> {movie.Director}
+            </p>
+            <p>
+              <strong>Actors:</strong> {movie.Actors}
+            </p>
+            <p>
+              <strong>Language:</strong> {movie.Language}
+            </p>
+            <p>
+              <strong className="imdb-mark">IMDb:</strong> {movie.imdbRating} / 10
+            </p>
+            <p>
+              <strong>Awards:</strong> {movie.Awards}
+            </p>
+          </div>
+
+          <div className="movie-actions">
+            <button
+              className="btn btn-primary"
+              onClick={() => toggleWatchlist(movie)}
+            >
+              {isInWatchlist(movie.imdbID)
+                ? "Remove from Watchlist"
+                : "Add to Watchlist"}
+            </button>
+          </div>
+
+          {Array.isArray(movie.Ratings) && movie.Ratings.length > 0 && (
+            <div className="ratings-row">
+              {movie.Ratings.map((rating) => (
+                <span key={rating.Source} className="rating-chip">
+                  {rating.Source}: {rating.Value}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </article>
   );
 }
 
